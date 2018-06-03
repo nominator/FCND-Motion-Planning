@@ -37,22 +37,20 @@ First I manually flew the drone to an arbitrary location on the map and noted th
 Added diagonal actions NW,NE,SW and SE to enum class Action with sqrt(2) as cost and modified valid_actions method to check for out-of-bounds and obstacle collision when applying these actions in path searching.
 
 #### 6. Cull waypoints 
+##### motion_planning.py: Line# 158 to 159
+##### planning_utils.py: Line# 164 to 222
 I implemented both collinearity and bresenham methods to prune the calculated path. For my chosen start and goal positions I tried different combinations, here are the results  A* calculated path as follows
 
 A* Type | Path Length | Path Culling (Collinearity) | Path Culling (Bresenham)
 --- | --- | --- | ---
-A* without diagonal actions | 749 | c | 11
-A* with diagonal actions | 579 | c | 15
+A* without diagonal actions | 749 | 149 | 11
+A* with diagonal actions | 579 | 57 | 15
 
+Clearly, adding diagonal actions significantly reduced the calculated path length. Also, its clear that Bresenham produces better culled paths than collinearity testing method. However, there is an interesting observation. The most leaner path (11 waypoints) was obtained using Bresenham on A* without diagonal actions. Bresenham applied on A* with diagonal actions produced 15 waypoints. I understand this might not be the case always and depends on lot of factors, nevertheless, interesting.
 
 ### Execute the flight
 #### 1. Does it work?
-It works!
+Flawlessly :). However, lot of improvements can be made, especially atttitude setting, overshoots and advanced techniques like receding horizon.
 
 ### Double check that you've met specifications for each of the [rubric](https://review.udacity.com/#!/rubrics/1534/view) points.
-  
-# Extra Challenges: Real World Planning
-
-For an extra challenge, consider implementing some of the techniques described in the "Real World Planning" lesson. You could try implementing a vehicle model to take dynamic constraints into account, or implement a replanning method to invoke if you get off course or encounter unexpected obstacles.
-
-
+All in order :)
