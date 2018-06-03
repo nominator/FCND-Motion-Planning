@@ -31,7 +31,7 @@ Now that the current position is in map's coordinate frame, I initialize grid_st
 #### 4. Set grid goal position from geodetic coords
 ##### motion_planning.py: Line# 143 to 145
 First I manually flew the drone to an arbitrary location on the map and noted the geodetic position displayed top left of simulator window. 
-![Goal Position](./misc/goal_pos.png)
+![Goal Position](./misc/goal_pos.PNG)
 
 Initialized goal_geo using these geodectic coords. Then I called global_to_local() function passing it the goal_geo and global_home to get the local_goal position expressed relative to global_home position in map's coordinate frame. Third I transform this local_goal position to grid_goal by substracting grid offsets from it. At this point I have both start and goal positions expressed in grid frame alongwith the grid itself, all set for applying A*
 
