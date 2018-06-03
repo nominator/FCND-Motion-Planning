@@ -39,10 +39,10 @@ Added diagonal actions NW,NE,SW and SE to enum class Action with sqrt(2) as cost
 #### 6. Cull waypoints 
 I implemented both collinearity and bresenham methods to prune the calculated path. For my chosen start and goal positions I tried different combinations, here are the results  A* calculated path as follows
 
- | Path Length | Culled Path Length (Collinearity Test) | Culled Path Length (Bresenham)
+A* Type | Path Length | Culled Path Length (Collinearity Test) | Culled Path Length (Bresenham)
 --- | --- | --- | ---
-A* without diagonal actions | 749 |  | 11
-A* with diagonal actions | 579 |  | 15
+A* without diagonal actions | 749 | c | 11
+A* with diagonal actions | 579 | c | 15
 
 
 ### Execute the flight
