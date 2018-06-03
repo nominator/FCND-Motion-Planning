@@ -56,10 +56,10 @@ class Action(Enum):
     EAST = (0, 1, 1)
     NORTH = (-1, 0, 1)
     SOUTH = (1, 0, 1)
-##    NE = (-1, 1, 1.414213)
-##    NW = (-1, -1, 1.414213)
-##    SE = (1, 1, 1.414213)
-##    SW = (1, -1, 1.414213)
+    NE = (-1, 1, 1.414213)
+    NW = (-1, -1, 1.414213)
+    SE = (1, 1, 1.414213)
+    SW = (1, -1, 1.414213)
 
     @property
     def cost(self):
@@ -83,24 +83,24 @@ def valid_actions(grid, current_node):
 
     if x - 1 < 0 or grid[x - 1, y] == 1:
         valid_actions.remove(Action.NORTH)
-##        valid_actions.remove(Action.NE)
-##        valid_actions.remove(Action.NW)
+        valid_actions.remove(Action.NE)
+        valid_actions.remove(Action.NW)
     if x + 1 > n or grid[x + 1, y] == 1:
         valid_actions.remove(Action.SOUTH)
-##        valid_actions.remove(Action.SE)
-##        valid_actions.remove(Action.SW)        
+        valid_actions.remove(Action.SE)
+        valid_actions.remove(Action.SW)        
     if y - 1 < 0 or grid[x, y - 1] == 1:
         valid_actions.remove(Action.WEST)
-##        if Action.NW in valid_actions:
-##            valid_actions.remove(Action.NW)
-##        if Action.SW in valid_actions:
-##            valid_actions.remove(Action.SW)        
+        if Action.NW in valid_actions:
+            valid_actions.remove(Action.NW)
+        if Action.SW in valid_actions:
+            valid_actions.remove(Action.SW)        
     if y + 1 > m or grid[x, y + 1] == 1:
         valid_actions.remove(Action.EAST)
-##        if Action.NE in valid_actions:
-##            valid_actions.remove(Action.NE)
-##        if Action.SE in valid_actions:
-##            valid_actions.remove(Action.SE)                                
+        if Action.NE in valid_actions:
+            valid_actions.remove(Action.NE)
+        if Action.SE in valid_actions:
+            valid_actions.remove(Action.SE)                                
 
     return valid_actions
 
