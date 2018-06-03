@@ -1,46 +1,48 @@
 ### Explain the Starter Code
 
 #### 1. Explain the functionality of what's provided in `motion_planning.py` and `planning_utils.py`
-These scripts contain a basic planning implementation that includes...
+This provides a basic path planning solution. The main script connects with the simulator via Udacidrone API and controls the drone. The script is basically a state-machine that transitions between different states for a drone flight mission.
 
-And here's a lovely image of my results (ok this image has nothing to do with it, but it's a nice example of how to include images in your writeup!)
-![Top Down View](./misc/high_up.png)
+It is quite similar to the backyard flyer state-machine with a new Planning state. After drone is armed it transitions to this state by calling plan_path(). This function 
 
-Here's | A | Snappy | Table
---- | --- | --- | ---
-1 | `highlight` | **bold** | 7.41
-2 | a | b | c
-3 | *italic* | text | 403
-4 | 2 | 3 | abcd
+- loads the obstacle map data from colliders.csv
+- creats a grid using the map data, it returns north and east offsets as well. These are required to transform positions and waypoints between the map coordinates and grid coordinates. There is one major distinction between the two coordinate systems. The map has its origin in the center of the map, whereas grid has its origin in the lower left corner. Therefore it is important to tranform coordinates when using map or grid
+- sets start and goal positions in grids coordinate frame. Since A* will be executed on the grid, therefore start and goal positions need to be set in grid coordinate frame.
+- sets start position at the center of grid and map
+- set a goal position relative to start position, i.e. 10m north and 10m east of start position
+- searches a path using A*, the method a_star() takes in a grid alongwith start and goal cells and returns a list of cells representing the path from start to goal.
+- the path cells are transformed to map waypoints using north and east offsets and are stored in waypoints list
+- script then transitions to waypoint state that sets each waypoint as target position for drone to follow one by one
 
 ### Implementing Your Path Planning Algorithm
 
 #### 1. Set your global home position
-Here students should read the first line of the csv file, extract lat0 and lon0 as floating point values and use the self.set_home_position() method to set global home. Explain briefly how you accomplished this in your code.
-
-
-And here is a lovely picture of our downtown San Francisco environment from above!
-![Map of SF](./misc/map.png)
+##### motion_planning.py: Line# 125
+wrote a function called get_global_home_from_file() in moition planning class that loads the geodetic coordinates from the first line of colliders.csv file and sets it as the global home position of the drone using the set_home_position() of the drone class. This position can then be retrieved using self.global_home property of the drone class.
 
 #### 2. Set your current local position
-Here as long as you successfully determine your local position relative to global home you'll be all set. Explain briefly how you accomplished this in your code.
-
-
-Meanwhile, here's a picture of me flying through the trees!
-![Forest Flying](./misc/in_the_trees.png)
+##### motion_planning.py: Line# 128
+Next I set the local position of the drone relative to global_home by calling the global_to_local() function. I supplied the current global postion of the drone and its global home position to this method. Both of these are in geodetic frame. The output of the function is the current position of the drone relative to drone's home position in local ECEF frame. This essentially puts the current position of the drone in the map's coordinate frame provided in colliders.csv
 
 #### 3. Set grid start position from local position
-This is another step in adding flexibility to the start location. As long as it works you're good to go!
+##### motion_planning.py: Line# 139
+Now that the current position is in map's coordinate frame, I initialize grid_start position by transforming the local_position to grid coordinate frame using the north and east offsets returned by create_grid() method. The transformation is made by subtracting the offsets from local_position.
 
 #### 4. Set grid goal position from geodetic coords
-This step is to add flexibility to the desired goal location. Should be able to choose any (lat, lon) within the map and have it rendered to a goal location on the grid.
+##### motion_planning.py: Line# 143 to 145
+First I manually flew the drone to an arbitrary location on the map and noted the geodetic position displayed top left of simulator window. Initialized goal_geo using these geodectic coords. Then I called global_to_local() function passing it the goal_geo and global_home to get the local_goal position expressed relative to global_home position in map's coordinate frame. Third I transform this local_goal position to grid_goal by substracting grid offsets from it. At this point I have both start and goal positions expressed in grid frame alongwith the grid itself, all set for applying A*
 
 #### 5. Modify A* to include diagonal motion (or replace A* altogether)
-Minimal requirement here is to modify the code in planning_utils() to update the A* implementation to include diagonal motions on the grid that have a cost of sqrt(2), but more creative solutions are welcome. Explain the code you used to accomplish this step.
+##### planning_utils.py: Line# 59 to 62 and 84 to 103
+Added diagonal actions NW,NE,SW and SE to enum class Action with sqrt(2) as cost and modified valid_actions method to check for out-of-bounds and obstacle collision when applying these actions in path searching.
 
 #### 6. Cull waypoints 
-For this step you can use a collinearity test or ray tracing method like Bresenham. The idea is simply to prune your path of unnecessary waypoints. Explain the code you used to accomplish this step.
+I implemented both collinearity and bresenham methods to prune the calculated path. For my chosen start and goal positions I tried different combinations, here are the results  A* calculated path as follows
 
+ | Path Length | Culled Path Length (Collinearity Test) | Culled Path Length (Bresenham)
+--- | --- | --- | ---
+A* without diagonal actions | 749 |  | 11
+A* with diagonal actions | 579 |  | 15
 
 
 ### Execute the flight
