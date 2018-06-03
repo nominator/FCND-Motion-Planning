@@ -1,6 +1,7 @@
 from enum import Enum
 from queue import PriorityQueue
 import numpy as np
+from bresenham import bresenham
 
 
 def create_grid(data, drone_altitude, safety_distance):
@@ -50,11 +51,15 @@ class Action(Enum):
     to the current grid position. The third and final value
     is the cost of performing the action.
     """
-
+    
     WEST = (0, -1, 1)
     EAST = (0, 1, 1)
     NORTH = (-1, 0, 1)
     SOUTH = (1, 0, 1)
+##    NE = (-1, 1, 1.414213)
+##    NW = (-1, -1, 1.414213)
+##    SE = (1, 1, 1.414213)
+##    SW = (1, -1, 1.414213)
 
     @property
     def cost(self):
@@ -78,12 +83,24 @@ def valid_actions(grid, current_node):
 
     if x - 1 < 0 or grid[x - 1, y] == 1:
         valid_actions.remove(Action.NORTH)
+##        valid_actions.remove(Action.NE)
+##        valid_actions.remove(Action.NW)
     if x + 1 > n or grid[x + 1, y] == 1:
         valid_actions.remove(Action.SOUTH)
+##        valid_actions.remove(Action.SE)
+##        valid_actions.remove(Action.SW)        
     if y - 1 < 0 or grid[x, y - 1] == 1:
         valid_actions.remove(Action.WEST)
+##        if Action.NW in valid_actions:
+##            valid_actions.remove(Action.NW)
+##        if Action.SW in valid_actions:
+##            valid_actions.remove(Action.SW)        
     if y + 1 > m or grid[x, y + 1] == 1:
         valid_actions.remove(Action.EAST)
+##        if Action.NE in valid_actions:
+##            valid_actions.remove(Action.NE)
+##        if Action.SE in valid_actions:
+##            valid_actions.remove(Action.SE)                                
 
     return valid_actions
 
@@ -144,3 +161,65 @@ def a_star(grid, h, start, goal):
 def heuristic(position, goal_position):
     return np.linalg.norm(np.array(position) - np.array(goal_position))
 
+def point(p):
+    return np.array([p[0], p[1], 1.]).reshape(1, -1)
+
+def collinearity_check(p1, p2, p3, epsilon=1e-6):   
+    m = np.concatenate((p1, p2, p3), 0)
+    det = np.linalg.det(m)
+    return abs(det) < epsilon
+
+def prune_coll(path):
+    if path is not None:
+        pruned_path = [p for p in path]
+        # TODO: prune the path!
+        i = 0
+        pruned = []
+        while i < len(pruned_path)-2:                                    
+            is_pruned = True;
+            j=i
+            while is_pruned and j < len(pruned_path)-2:                
+                p1 = point(pruned_path[j])
+                p2 = point(pruned_path[j+1])
+                p3 = point(pruned_path[j+2])
+                if(collinearity_check(p1,p2,p3)):
+                    j += 1
+                else:
+                    is_pruned = False
+            pruned.append(pruned_path[i])                    
+            i = (j+1)
+        pruned.extend(pruned_path[i::])        
+        pruned_path = pruned
+    else:
+        pruned_path = path
+        
+    return pruned_path
+
+def path_feasible(p1, p2, grid):
+    cells = list(bresenham(p1[0], p1[1], p2[0], p2[1]))
+    for cell in cells:
+        if grid[cell[0], cell[1]] == 1:
+            return False
+    return True
+    
+
+def prune_bres(path, grid):
+    pruned_path = []
+    if len(path) >= 3:
+        j = 1
+        p1 = path[j-1]        
+        pruned_path.append(p1)
+        while j < len(path):
+            p2 = path[j]
+            if path_feasible(p1, p2, grid):
+               j += 1
+            else:
+               p1 = path[j-1]
+               pruned_path.append(p1)
+        pruned_path.append(path[j-1])
+        return pruned_path
+    
+    return path
+        
+        
+    
